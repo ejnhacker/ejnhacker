@@ -1,3 +1,4 @@
 Flask==2.0.3
 Werkzeug==2.0.3
 python-telegram-bot==13.15
+gunicorn==20.1.0
