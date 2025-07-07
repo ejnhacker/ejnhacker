@@ -23,7 +23,7 @@ app = Flask(__name__)
 bot = Bot(token=TOKEN)
 
 @app.route('/')
-def home():
+def health_check():
     return "Telegram Bot Service Running"
 
 @app.route('/capture/<link_id>')
