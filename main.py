@@ -9,7 +9,7 @@ from telegram.ext import Updater, CommandHandler
 
 # Configuration
 TOKEN = os.environ['TELEGRAM_TOKEN']
-DOMAIN = os.environ['RAILWAY_STATIC_URL']  # Railway provides this
+DOMAIN = os.environ.get('RAILWAY_STATIC_URL', 'https://your-app.railway.app')
 PORT = int(os.environ.get('PORT', 5000))
 
 # Database simulation
